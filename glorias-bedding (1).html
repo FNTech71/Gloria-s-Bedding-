@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gloria's Bedding — Inventory</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --green:#1B4332;--green-light:#2D6A4F;--green-pale:#E8F0EC;
+      --gold:#C9A84C;--gold-light:#FFF8E7;
+      --cream:#FAF7F2;--cream-dark:#F0EBE0;
+      --text:#1C1C1C;--muted:#6B6B6B;--white:#FFFFFF;
+      --red:#C0392B;--red-light:#FDECEA;
+      --border:#E0D8CC;
+      --shadow:0 2px 12px rgba(27,67,50,.08);
+      --shadow-lg:0 8px 32px rgba(27,67,50,.14);
+    }
+    body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+
+    /* AUTH */
+    .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--green) 0%,var(--green-light) 100%);padding:24px}
+    .auth-card{background:var(--white);border-radius:20px;padding:48px 40px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.22)}
+    .auth-logo{text-align:center;margin-bottom:32px}
+    .auth-logo .leaf{font-size:40px;display:block;margin-bottom:8px}
+    .auth-logo h1{font-family:'Playfair Display',serif;font-size:28px;color:var(--green);font-weight:700}
+    .auth-logo p{color:var(--muted);font-size:12px;margin-top:4px;text-transform:uppercase;letter-spacing:.08em}
+    .auth-tabs{display:flex;background:var(--cream-dark);border-radius:10px;padding:4px;margin-bottom:24px}
+    .auth-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .2s}
+    .auth-tab.active{background:var(--white);color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--cream);outline:none;transition:border-color .2s}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green);background:var(--white)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+    .btn-primary{background:var(--green);color:var(--white);width:100%}
+    .btn-primary:hover{background:var(--green-light)}
+    .btn-gold{background:var(--gold);color:var(--white);width:100%}
+    .btn-gold:hover{background:#b8963d}
+    .btn-apple{background:#000;color:#fff;width:100%;margin-top:10px}
+    .btn-apple:hover{background:#222}
+    .btn-sm{padding:6px 11px;font-size:12px;border-radius:7px;width:auto}
+    .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+    .btn-outline:hover{border-color:var(--green);color:var(--green)}
+    .btn-danger{background:var(--red);color:var(--white)}
+    .btn-danger:hover{background:#a93226}
+    .btn-export{background:var(--cream-dark);color:var(--text);border:1.5px solid var(--border)}
+    .btn-export:hover{background:var(--border)}
+    .divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--muted);font-size:12px}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    /* HEADER */
+    .header{background:var(--green);color:var(--white);padding:0 24px;display:flex;align-items:center;height:64px;gap:20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.18)}
+    .header-logo{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--white);white-space:nowrap;flex-shrink:0}
+    .header-logo span{color:var(--gold)}
+    .header-nav{display:flex;gap:3px;flex:1;overflow-x:auto}
+    .nav-tab{padding:8px 14px;border-radius:8px;border:none;background:transparent;color:rgba(255,255,255,.7);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:6px}
+    .nav-tab:hover{background:rgba(255,255,255,.1);color:var(--white)}
+    .nav-tab.active{background:rgba(255,255,255,.15);color:var(--white)}
+    .header-user{display:flex;align-items:center;gap:9px;flex-shrink:0}
+    .user-badge{background:rgba(255,255,255,.1);border-radius:20px;padding:6px 12px;font-size:12px;display:flex;align-items:center;gap:7px}
+    .role-tag{background:var(--gold);color:var(--green);font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em}
+    .role-tag.worker{background:rgba(255,255,255,.2);color:var(--white)}
+    .btn-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:var(--white);padding:7px 13px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s}
+    .btn-logout:hover{background:rgba(255,255,255,.2)}
+
+    /* CONTENT */
+    .app-layout{min-height:100vh;display:flex;flex-direction:column}
+    .content{flex:1;padding:28px 24px;max-width:1200px;margin:0 auto;width:100%}
+    .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+    .page-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--green)}
+    .page-subtitle{font-size:13px;color:var(--muted);margin-top:2px}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:24px}
+    .stat-card{background:var(--white);border-radius:14px;padding:18px 22px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;transition:transform .2s}
+    .stat-card:hover{transform:translateY(-2px)}
+    .stat-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .stat-icon.green{background:var(--green-pale)}
+    .stat-icon.gold{background:var(--gold-light)}
+    .stat-icon.red{background:var(--red-light)}
+    .stat-value{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1}
+    .stat-label{font-size:11px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+
+    /* TOOLBAR */
+    .toolbar{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+    .search-box{flex:1;min-width:180px;position:relative}
+    .search-box input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;background:var(--white);outline:none;transition:border-color .2s}
+    .search-box input:focus{border-color:var(--green)}
+    .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none}
+    .filter-select{padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;background:var(--white);outline:none;cursor:pointer;transition:border-color .2s}
+    .filter-select:focus{border-color:var(--green)}
+
+    /* TABLE */
+    .table-card{background:var(--white);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    thead tr{background:var(--green);color:var(--white)}
+    thead th{padding:13px 15px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+    tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover{background:var(--cream)}
+    tbody tr.low-stock{background:#FFF9F9}
+    tbody tr.low-stock:hover{background:#FFF0F0}
+    td{padding:13px 15px;font-size:14px;vertical-align:middle}
+    .category-badge{background:var(--green-pale);color:var(--green);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em}
+    .qty-badge{font-weight:700;font-size:15px}
+    .qty-badge.low{color:var(--red)}
+    .qty-badge.ok{color:var(--green)}
+    .low-badge{background:var(--red-light);color:var(--red);font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em;margin-left:5px}
+    .actions-cell{display:flex;gap:5px;flex-wrap:wrap}
+    .btn-sell{background:var(--gold);color:var(--white)}
+    .btn-sell:hover{background:#b8963d}
+    .btn-edit{background:var(--green-pale);color:var(--green)}
+    .btn-edit:hover{background:var(--green);color:var(--white)}
+    .btn-del{background:var(--red-light);color:var(--red)}
+    .btn-del:hover{background:var(--red);color:var(--white)}
+    .empty-state{text-align:center;padding:56px 24px;color:var(--muted)}
+    .empty-state .emo{font-size:46px;margin-bottom:10px}
+    .empty-state h3{font-family:'Playfair Display',serif;color:var(--text);margin-bottom:6px}
+
+    /* ALERTS */
+    .alert-banner{background:var(--red-light);border:1px solid #f5c6cb;border-radius:12px;padding:13px 18px;margin-bottom:18px;display:flex;align-items:flex-start;gap:11px}
+    .alert-banner .ico{font-size:18px;flex-shrink:0;margin-top:1px}
+    .alert-banner strong{color:var(--red);font-size:13px}
+    .alert-banner p{font-size:12px;color:#7B241C;margin-top:2px}
+
+    /* MODALS */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;backdrop-filter:blur(3px)}
+    .modal{background:var(--white);border-radius:20px;padding:34px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.22);max-height:90vh;overflow-y:auto}
+    .modal-title{font-family:'Playfair Display',serif;font-size:21px;color:var(--green);margin-bottom:22px;font-weight:700}
+    .modal-actions{display:flex;gap:10px;margin-top:22px}
+    .modal-actions .btn{flex:1}
+
+    /* SALES */
+    .sales-item{background:var(--white);border-radius:12px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);margin-bottom:9px;gap:12px}
+    .sale-info h4{font-weight:600;font-size:14px;margin-bottom:2px}
+    .sale-info p{font-size:12px;color:var(--muted)}
+    .sale-amount{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--green);text-align:right;flex-shrink:0}
+    .sale-amount span{display:block;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);font-weight:400}
+
+    /* TEAM */
+    .team-card{background:var(--white);border-radius:12px;padding:15px 18px;display:flex;align-items:center;box-shadow:var(--shadow);margin-bottom:9px;gap:12px}
+    .team-avatar{width:40px;height:40px;background:var(--green-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+    .team-info{flex:1}
+    .team-info h4{font-weight:600;font-size:14px}
+    .team-info p{font-size:12px;color:var(--muted)}
+
+    /* LOADING */
+    .loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--green);flex-direction:column;gap:14px;color:var(--white)}
+    .loading-screen h2{font-family:'Playfair Display',serif;font-size:22px}
+    .spinner{width:38px;height:38px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:22px;right:22px;background:var(--green);color:var(--white);padding:13px 18px;border-radius:12px;box-shadow:var(--shadow-lg);font-size:14px;font-weight:500;z-index:9999;display:flex;align-items:center;gap:8px;animation:slideUp .3s ease;max-width:300px}
+    .toast.error{background:var(--red)}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+    .hidden{display:none!important}
+
+    @media(max-width:640px){
+      .header{padding:0 14px}
+      .content{padding:18px 14px}
+      .auth-card{padding:30px 20px}
+      .modal{padding:26px 18px}
+      .stat-value{font-size:20px}
+      .user-badge{display:none}
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen" class="loading-screen">
+  <div class="spinner"></div>
+  <h2>Gloria's Bedding</h2>
+</div>
+
+<!-- AUTH -->
+<div id="auth-screen" class="auth-screen hidden">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="leaf">🌿</span>
+      <h1>Gloria's Bedding</h1>
+      <p>Inventory Management</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Create Account</button>
+    </div>
+    <div id="signin-form">
+      <div class="form-group"><label>Email</label><input type="email" id="si-email" placeholder="you@email.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="si-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')signInEmail()"></div>
+      <button class="btn btn-primary" onclick="signInEmail()">Sign In</button>
+    </div>
+    <div id="register-form" class="hidden">
+      <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Your Name"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="you@email.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-pw" placeholder="Min. 6 characters"></div>
+      <button class="btn btn-primary" onclick="registerEmail()">Create Account</button>
+    </div>
+    <div class="divider">or</div>
+    <button class="btn btn-apple" onclick="signInApple()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+      Sign in with Apple
+    </button>
+    <div id="auth-err" class="hidden" style="margin-top:12px;color:var(--red);font-size:13px;text-align:center"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app" class="app-layout hidden">
+  <header class="header">
+    <div class="header-logo">Gloria's <span>Bedding</span></div>
+    <nav class="header-nav" id="header-nav"></nav>
+    <div class="header-user">
+      <div class="user-badge">
+        <span id="uname"></span>
+        <span class="role-tag" id="urole">Owner</span>
+      </div>
+      <button class="btn-logout" onclick="doSignOut()">Sign Out</button>
+    </div>
+  </header>
+  <div class="content" id="main-content"></div>
+</div>
+
+<!-- MODALS -->
+<div id="product-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <h2 class="modal-title" id="pm-title">Add Product</h2>
+    <input type="hidden" id="pm-id">
+    <div class="form-group"><label>Product Name *</label><input type="text" id="pm-name" placeholder="e.g. King Size Foam Mattress"></div>
+    <div class="form-group"><label>Category *</label>
+      <select id="pm-cat">
+        <option>Mattress</option><option>Carpet</option><option>Pillow</option>
+        <option>Bedsheet</option><option>Duvet</option><option>Blanket</option>
+        <option>Cushion</option><option>Other</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label>Quantity *</label><input type="number" id="pm-qty" placeholder="0" min="0"></div>
+      <div class="form-group"><label>Price (₦/unit)</label><input type="number" id="pm-price" placeholder="0.00" min="0" step="0.01"></div>
+    </div>
+    <div class="form-group"><label>Low Stock Alert (threshold)</label><input type="number" id="pm-thresh" placeholder="3" min="0"></div>
+    <div class="form-group"><label>Notes</label><textarea id="pm-notes" rows="2" placeholder="Optional notes..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closePM()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<div id="sell-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <h2 class="modal-title">Record Sale</h2>
+    <input type="hidden" id="sm-id">
+    <p id="sm-label" style="color:var(--muted);font-size:14px;margin-bottom:18px"></p>
+    <div class="form-group"><label>Quantity Sold *</label><input type="number" id="sm-qty" placeholder="1" min="1"></div>
+    <div class="form-group"><label>Sale Price per Unit (₦)</label><input type="number" id="sm-price" placeholder="0.00" min="0" step="0.01"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeSM()">Cancel</button>
+      <button class="btn btn-gold" onclick="confirmSell()">✓ Confirm Sale</button>
+    </div>
+  </div>
+</div>
+
+<div id="del-modal" class="modal-overlay hidden">
+  <div class="modal" style="max-width:340px;text-align:center">
+    <div style="font-size:44px;margin-bottom:10px">🗑️</div>
+    <h2 class="modal-title" style="text-align:center">Delete Product?</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:20px">This cannot be undone.</p>
+    <input type="hidden" id="del-id">
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeDM()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script type="module">
+// =====================================================
+// 🔧 PASTE YOUR FIREBASE CONFIG HERE
+// Firebase Console → Project Settings → Your Apps
+// =====================================================
+import { initializeApp }        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+         signInWithPopup, OAuthProvider, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+         onSnapshot, setDoc, getDoc, getDocs, query, orderBy, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:            "REPLACE_API_KEY",
+  authDomain:        "REPLACE_AUTH_DOMAIN",
+  projectId:         "REPLACE_PROJECT_ID",
+  storageBucket:     "REPLACE_STORAGE_BUCKET",
+  messagingSenderId: "REPLACE_SENDER_ID",
+  appId:             "REPLACE_APP_ID"
+};
+// =====================================================
+
+let auth, db;
+let currentUser = null, currentRole = 'worker';
+let products = [], salesLog = [], teamMembers = [];
+let activeTab = 'dashboard';
+let searchQ = '', filterCat = 'All';
+let unsubP, unsubS, unsubT;
+let toastTimer;
+
+try {
+  const app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db   = getFirestore(app);
+} catch(e) {
+  document.getElementById('loading-screen').innerHTML =
+    `<div style="text-align:center;color:white;padding:32px">
+      <div style="font-size:48px">⚙️</div>
+      <h2 style="font-family:'Playfair Display',serif;margin:12px 0">Firebase Not Configured</h2>
+      <p style="opacity:.8;font-size:14px;max-width:300px;margin:0 auto">
+        Open this file and replace the Firebase config values at the top of the script with your project credentials.
+      </p>
+    </div>`;
+}
+
+// ─── AUTH STATE ───────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    const ref  = doc(db, 'users', user.uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      const all  = await getDocs(collection(db, 'users'));
+      const role = all.empty ? 'admin' : 'worker';
+      const name = user.displayName || user.email.split('@')[0];
+      await setDoc(ref, { name, email: user.email, role, createdAt: serverTimestamp() });
+      currentRole = role;
+      currentUser = { uid: user.uid, email: user.email, name, role };
+    } else {
+      const d = snap.data();
+      currentRole = d.role || 'worker';
+      currentUser = { uid: user.uid, email: user.email, name: d.name, role: currentRole };
+    }
+    showApp();
+  } else {
+    showAuth();
+  }
+});
+
+function showAuth() {
+  document.getElementById('loading-screen').classList.add('hidden');
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('main-app').classList.add('hidden');
+}
+
+function showApp() {
+  document.getElementById('loading-screen').classList.add('hidden');
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+
+  document.getElementById('uname').textContent = currentUser.name;
+  const rt = document.getElementById('urole');
+  rt.textContent = currentRole === 'admin' ? 'Owner' : 'Worker';
+  if (currentRole === 'worker') rt.classList.add('worker');
+
+  buildNav();
+  startListeners();
+  render();
+}
+
+function buildNav() {
+  const tabs = [
+    { id:'dashboard', label:'📊 Dashboard' },
+    { id:'inventory', label:'📦 Inventory' },
+    ...(currentRole==='admin'
+      ? [{ id:'sales', label:'🧾 Sales Log' }, { id:'team', label:'👥 Team' }]
+      : [])
+  ];
+  document.getElementById('header-nav').innerHTML =
+    tabs.map(t => `<button class="nav-tab ${t.id===activeTab?'active':''}" onclick="switchTab('${t.id}')">${t.label}</button>`).join('');
+}
+
+function startListeners() {
+  if (unsubP) unsubP();
+  unsubP = onSnapshot(query(collection(db,'products'), orderBy('createdAt','desc')), snap => {
+    products = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    if (['inventory','dashboard'].includes(activeTab)) render();
+  });
+  if (currentRole === 'admin') {
+    if (unsubS) unsubS();
+    unsubS = onSnapshot(query(collection(db,'sales'), orderBy('soldAt','desc')), snap => {
+      salesLog = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      if (['sales','dashboard'].includes(activeTab)) render();
+    });
+    if (unsubT) unsubT();
+    unsubT = onSnapshot(collection(db,'users'), snap => {
+      teamMembers = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+      if (activeTab==='team') render();
+    });
+  }
+}
+
+// ─── TABS ─────────────────────────────────────────
+window.switchTab = t => {
+  activeTab = t;
+  buildNav();
+  render();
+};
+
+// ─── RENDER ROUTER ────────────────────────────────
+function render() {
+  const el = document.getElementById('main-content');
+  if (activeTab==='dashboard') el.innerHTML = renderDashboard();
+  else if (activeTab==='inventory') el.innerHTML = renderInventory();
+  else if (activeTab==='sales') el.innerHTML = renderSales();
+  else if (activeTab==='team') el.innerHTML = renderTeam();
+}
+
+// ─── DASHBOARD ────────────────────────────────────
+function renderDashboard() {
+  const totalProducts = products.length;
+  const totalUnits    = products.reduce((s,p) => s+(p.quantity||0), 0);
+  const totalValue    = products.reduce((s,p) => s+(p.quantity||0)*(p.price||0), 0);
+  const lowItems      = products.filter(p => (p.quantity||0) <= (p.lowStockThreshold||3));
+  const today         = new Date().toDateString();
+  const todaySales    = salesLog.filter(s => s.soldAt?.toDate?.().toDateString()===today);
+  const todayRev      = todaySales.reduce((s,x) => s+(x.total||0), 0);
+
+  const lowAlert = lowItems.length
+    ? `<div class="alert-banner">
+        <div class="ico">🔔</div>
+        <div><strong>Low Stock — ${lowItems.length} item(s) need restocking</strong>
+        <p>${lowItems.map(p=>`${p.name} (${p.quantity} left)`).join(' · ')}</p></div>
+       </div>` : '';
+
+  const cats = {};
+  const icons = {Mattress:'🛏️',Carpet:'🪄',Pillow:'😴',Bedsheet:'📄',Duvet:'🛌',Blanket:'🧣',Cushion:'🛋️',Other:'📦'};
+  products.forEach(p => {
+    const c = p.category||'Other';
+    if (!cats[c]) cats[c]={qty:0,count:0};
+    cats[c].qty += p.quantity||0; cats[c].count++;
+  });
+
+  return `
+    <div class="page-header">
+      <div>
+        <div class="page-title">Good day, ${currentUser.name.split(' ')[0]}! 👋</div>
+        <div class="page-subtitle">Here's what's happening at the store today.</div>
+      </div>
+    </div>
+    ${lowAlert}
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon green">📦</div>
+        <div><div class="stat-value">${totalProducts}</div><div class="stat-label">Products</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">🏷️</div>
+        <div><div class="stat-value">${totalUnits}</div><div class="stat-label">Units in Stock</div></div>
+      </div>
+      ${currentRole==='admin' ? `
+      <div class="stat-card">
+        <div class="stat-icon gold">💰</div>
+        <div><div class="stat-value">₦${totalValue.toLocaleString()}</div><div class="stat-label">Stock Value</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon gold">📈</div>
+        <div><div class="stat-value">₦${todayRev.toLocaleString()}</div><div class="stat-label">Revenue Today</div></div>
+      </div>` : ''}
+      <div class="stat-card">
+        <div class="stat-icon red">⚠️</div>
+        <div><div class="stat-value">${lowItems.length}</div><div class="stat-label">Low Stock</div></div>
+      </div>
+    </div>
+    <div class="page-title" style="font-size:18px;margin-bottom:14px">Stock by Category</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
+      ${Object.keys(cats).length===0 ? '<p style="color:var(--muted);font-size:14px">No products yet.</p>'
+        : Object.entries(cats).map(([c,d]) => `
+          <div class="stat-card" style="flex-direction:column;align-items:flex-start;gap:8px">
+            <div style="font-size:22px">${icons[c]||'📦'}</div>
+            <div><div style="font-weight:700;font-size:15px">${d.qty} units</div>
+            <div style="font-size:11px;color:var(--muted)">${c} · ${d.count} items</div></div>
+          </div>`).join('')}
+    </div>`;
+}
+
+// ─── INVENTORY ────────────────────────────────────
+function renderInventory() {
+  const allCats = ['All', ...new Set(products.map(p=>p.category).filter(Boolean))];
+  const filtered = products.filter(p => {
+    const ms = !searchQ || p.name.toLowerCase().includes(searchQ.toLowerCase());
+    const mc = filterCat==='All' || p.category===filterCat;
+    return ms && mc;
+  });
+  const lowItems = products.filter(p => (p.quantity||0)<=(p.lowStockThreshold||3));
+  const lowAlert = lowItems.length
+    ? `<div class="alert-banner">
+        <div class="ico">🔔</div>
+        <div><strong>${lowItems.length} item(s) are running low</strong>
+        <p>${lowItems.map(p=>p.name).join(' · ')}</p></div>
+       </div>` : '';
+
+  return `
+    <div class="page-header">
+      <div>
+        <div class="page-title">Inventory</div>
+        <div class="page-subtitle">${products.length} products · ${products.reduce((s,p)=>s+(p.quantity||0),0)} total units</div>
+      </div>
+      ${currentRole==='admin' ? `
+      <div style="display:flex;gap:9px;flex-wrap:wrap">
+        <button class="btn btn-export btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="openAdd()">+ Add Product</button>
+      </div>` : `<div style="background:var(--green-pale);color:var(--green);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600">👁️ View Only</div>`}
+    </div>
+    ${lowAlert}
+    <div class="toolbar">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input id="srch" type="text" placeholder="Search products…" value="${searchQ}" oninput="handleSearch(this.value)">
+      </div>
+      <select class="filter-select" onchange="handleFilter(this.value)">
+        ${allCats.map(c=>`<option ${c===filterCat?'selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Product</th><th>Category</th><th>In Stock</th>
+            ${currentRole==='admin' ? '<th>Price</th><th>Value</th><th>Actions</th>' : ''}
+          </tr></thead>
+          <tbody>
+            ${filtered.length===0 ? `<tr><td colspan="6"><div class="empty-state">
+              <div class="emo">📦</div>
+              <h3>No products found</h3>
+              <p>${currentRole==='admin'?'Click "+ Add Product" to get started.':'No products match your search.'}</p>
+            </div></td></tr>` :
+            filtered.map(p => {
+              const low = (p.quantity||0)<=(p.lowStockThreshold||3);
+              return `<tr class="${low?'low-stock':''}">
+                <td>
+                  <strong>${p.name}</strong>
+                  ${p.notes?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${p.notes}</div>`:''}
+                  ${low?`<span class="low-badge">Low Stock</span>`:''}
+                </td>
+                <td><span class="category-badge">${p.category||'Other'}</span></td>
+                <td><span class="qty-badge ${low?'low':'ok'}">${p.quantity||0}</span></td>
+                ${currentRole==='admin' ? `
+                <td>₦${(p.price||0).toLocaleString()}</td>
+                <td>₦${((p.price||0)*(p.quantity||0)).toLocaleString()}</td>
+                <td><div class="actions-cell">
+                  <button class="btn btn-sm btn-sell" onclick="openSell('${p.id}')">💰 Sell</button>
+                  <button class="btn btn-sm btn-edit" onclick="openEdit('${p.id}')">✏️</button>
+                  <button class="btn btn-sm btn-del" onclick="openDel('${p.id}')">🗑️</button>
+                </div></td>` : ''}
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ─── SALES ────────────────────────────────────────
+function renderSales() {
+  const today     = new Date().toDateString();
+  const tSales    = salesLog.filter(s => s.soldAt?.toDate?.().toDateString()===today);
+  const tRev      = tSales.reduce((s,x)=>s+(x.total||0),0);
+  const allRev    = salesLog.reduce((s,x)=>s+(x.total||0),0);
+
+  return `
+    <div class="page-header">
+      <div>
+        <div class="page-title">Sales Log</div>
+        <div class="page-subtitle">${salesLog.length} transactions · ₦${allRev.toLocaleString()} total revenue</div>
+      </div>
+    </div>
+    <div class="stats-grid" style="margin-bottom:22px">
+      <div class="stat-card"><div class="stat-icon gold">📈</div>
+        <div><div class="stat-value">₦${tRev.toLocaleString()}</div><div class="stat-label">Revenue Today</div></div></div>
+      <div class="stat-card"><div class="stat-icon green">🧾</div>
+        <div><div class="stat-value">${tSales.length}</div><div class="stat-label">Sales Today</div></div></div>
+      <div class="stat-card"><div class="stat-icon gold">💎</div>
+        <div><div class="stat-value">₦${allRev.toLocaleString()}</div><div class="stat-label">All-Time Revenue</div></div></div>
+    </div>
+    ${salesLog.length===0 ? `<div class="empty-state"><div class="emo">🧾</div><h3>No sales yet</h3><p>Record sales from the Inventory tab.</p></div>`
+    : salesLog.map(s => {
+        const d = s.soldAt?.toDate?.() || new Date();
+        return `<div class="sales-item">
+          <div style="font-size:22px;flex-shrink:0">🛒</div>
+          <div class="sale-info" style="flex:1">
+            <h4>${s.productName||'Unknown'}</h4>
+            <p>${s.qty||s.quantity||0} units · ${s.soldByName||'Unknown'} · ${d.toLocaleDateString()} ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p>
+          </div>
+          <div class="sale-amount">₦${(s.total||0).toLocaleString()}<span>@₦${(s.pricePerUnit||0).toLocaleString()}/unit</span></div>
+        </div>`;
+      }).join('')}`;
+}
+
+// ─── TEAM ─────────────────────────────────────────
+function renderTeam() {
+  return `
+    <div class="page-header">
+      <div>
+        <div class="page-title">Team</div>
+        <div class="page-subtitle">${teamMembers.length} members</div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+      New workers create their own account from the login page — they are automatically assigned the Worker role.
+      You can promote or demote them here.
+    </p>
+    ${teamMembers.map(m => `
+      <div class="team-card">
+        <div class="team-avatar">👤</div>
+        <div class="team-info">
+          <h4>${m.name||'Unknown'} ${m.id===currentUser.uid?'<span style="font-size:11px;color:var(--muted)">(you)</span>':''}</h4>
+          <p>${m.email}</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px">
+          <span class="role-tag ${m.role==='worker'?'worker':''}" style="background:${m.role==='admin'?'var(--gold)':'var(--green-pale)'};color:${m.role==='admin'?'var(--green)':'var(--green-light)'}">
+            ${m.role==='admin'?'Owner':'Worker'}
+          </span>
+          ${m.id!==currentUser.uid ? `<button class="btn btn-sm btn-outline" onclick="toggleRole('${m.id}','${m.role}')">
+            ${m.role==='admin'?'Make Worker':'Make Owner'}
+          </button>` : ''}
+        </div>
+      </div>`).join('')}`;
+}
+
+// ─── SEARCH & FILTER ──────────────────────────────
+window.handleSearch = v => { searchQ = v; render(); };
+window.handleFilter = v => { filterCat = v; render(); };
+
+// ─── PRODUCT CRUD ─────────────────────────────────
+window.openAdd = () => {
+  document.getElementById('pm-title').textContent = 'Add Product';
+  document.getElementById('pm-id').value = '';
+  ['pm-name','pm-qty','pm-price','pm-notes'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('pm-cat').value = 'Mattress';
+  document.getElementById('pm-thresh').value = '3';
+  document.getElementById('product-modal').classList.remove('hidden');
+};
+
+window.openEdit = id => {
+  const p = products.find(x=>x.id===id); if(!p) return;
+  document.getElementById('pm-title').textContent = 'Edit Product';
+  document.getElementById('pm-id').value    = id;
+  document.getElementById('pm-name').value  = p.name||'';
+  document.getElementById('pm-cat').value   = p.category||'Mattress';
+  document.getElementById('pm-qty').value   = p.quantity||0;
+  document.getElementById('pm-price').value = p.price||'';
+  document.getElementById('pm-thresh').value= p.lowStockThreshold||3;
+  document.getElementById('pm-notes').value = p.notes||'';
+  document.getElementById('product-modal').classList.remove('hidden');
+};
+
+window.closePM = () => document.getElementById('product-modal').classList.add('hidden');
+
+window.saveProduct = async () => {
+  const name = document.getElementById('pm-name').value.trim();
+  if (!name) return toast('Please enter a product name', true);
+  const qty = parseInt(document.getElementById('pm-qty').value)||0;
+  if (qty<0) return toast('Quantity cannot be negative', true);
+  const data = {
+    name,
+    category: document.getElementById('pm-cat').value,
+    quantity: qty,
+    price: parseFloat(document.getElementById('pm-price').value)||0,
+    lowStockThreshold: parseInt(document.getElementById('pm-thresh').value)||3,
+    notes: document.getElementById('pm-notes').value.trim(),
+    updatedAt: serverTimestamp()
+  };
+  const eid = document.getElementById('pm-id').value;
+  try {
+    if (eid) {
+      await updateDoc(doc(db,'products',eid), data);
+      toast('✅ Product updated!');
+    } else {
+      data.createdAt = serverTimestamp();
+      await addDoc(collection(db,'products'), data);
+      toast('✅ Product added!');
+    }
+    closePM();
+  } catch(e) { toast(e.message, true); }
+};
+
+// ─── SELL ─────────────────────────────────────────
+window.openSell = id => {
+  const p = products.find(x=>x.id===id); if(!p) return;
+  document.getElementById('sm-id').value    = id;
+  document.getElementById('sm-label').textContent = `Selling: ${p.name}  ·  ${p.quantity} in stock`;
+  document.getElementById('sm-qty').value   = 1;
+  document.getElementById('sm-price').value = p.price||'';
+  document.getElementById('sell-modal').classList.remove('hidden');
+};
+
+window.closeSM = () => document.getElementById('sell-modal').classList.add('hidden');
+
+window.confirmSell = async () => {
+  const id    = document.getElementById('sm-id').value;
+  const qty   = parseInt(document.getElementById('sm-qty').value)||0;
+  const price = parseFloat(document.getElementById('sm-price').value)||0;
+  if (qty<=0) return toast('Enter a valid quantity', true);
+  const p = products.find(x=>x.id===id); if(!p) return;
+  if (qty>p.quantity) return toast(`Only ${p.quantity} in stock!`, true);
+  try {
+    await updateDoc(doc(db,'products',id), { quantity: p.quantity-qty, updatedAt: serverTimestamp() });
+    await addDoc(collection(db,'sales'), {
+      productId: id, productName: p.name, qty, pricePerUnit: price,
+      total: qty*price, soldBy: currentUser.uid, soldByName: currentUser.name,
+      soldAt: serverTimestamp()
+    });
+    toast(`✅ Sold ${qty} × ${p.name}`);
+    closeSM();
+  } catch(e) { toast(e.message, true); }
+};
+
+// ─── DELETE ───────────────────────────────────────
+window.openDel = id => {
+  document.getElementById('del-id').value = id;
+  document.getElementById('del-modal').classList.remove('hidden');
+};
+window.closeDM = () => document.getElementById('del-modal').classList.add('hidden');
+window.confirmDelete = async () => {
+  const id = document.getElementById('del-id').value;
+  try {
+    await deleteDoc(doc(db,'products',id));
+    toast('🗑️ Product deleted');
+    closeDM();
+  } catch(e) { toast(e.message, true); }
+};
+
+// ─── TEAM ─────────────────────────────────────────
+window.toggleRole = async (uid, role) => {
+  const nr = role==='admin' ? 'worker' : 'admin';
+  try {
+    await updateDoc(doc(db,'users',uid), { role: nr });
+    toast(`✅ Role changed to ${nr}`);
+  } catch(e) { toast(e.message, true); }
+};
+
+// ─── EXPORT CSV ───────────────────────────────────
+window.exportCSV = () => {
+  const rows = [['Name','Category','Quantity','Price (₦)','Stock Value (₦)','Notes']];
+  products.forEach(p => rows.push([p.name, p.category, p.quantity, p.price, ((p.quantity||0)*(p.price||0)).toFixed(2), p.notes||'']));
+  const csv  = rows.map(r => r.map(c=>`"${c}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `glorias-bedding-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('📥 CSV downloaded!');
+};
+
+// ─── AUTH ─────────────────────────────────────────
+window.switchAuthTab = tab => {
+  document.getElementById('tab-signin').classList.toggle('active', tab==='signin');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('signin-form').classList.toggle('hidden', tab!=='signin');
+  document.getElementById('register-form').classList.toggle('hidden', tab!=='register');
+};
+
+window.signInEmail = async () => {
+  try {
+    await signInWithEmailAndPassword(auth, document.getElementById('si-email').value, document.getElementById('si-pw').value);
+  } catch(e) { authErr(fmtErr(e.code)); }
+};
+
+window.registerEmail = async () => {
+  const name = document.getElementById('reg-name').value.trim();
+  if (!name) return authErr('Please enter your name.');
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, document.getElementById('reg-email').value, document.getElementById('reg-pw').value);
+    const all  = await getDocs(collection(db,'users'));
+    const role = all.empty ? 'admin' : 'worker';
+    await setDoc(doc(db,'users',cred.user.uid), { name, email: cred.user.email, role, createdAt: serverTimestamp() });
+  } catch(e) { authErr(fmtErr(e.code)); }
+};
+
+window.signInApple = async () => {
+  try {
+    const p = new OAuthProvider('apple.com');
+    p.addScope('email'); p.addScope('name');
+    await signInWithPopup(auth, p);
+  } catch(e) { authErr('Apple sign-in failed. Make sure it is enabled in your Firebase Console.'); }
+};
+
+window.doSignOut = async () => {
+  [unsubP,unsubS,unsubT].forEach(u => u && u());
+  await signOut(auth);
+};
+
+function authErr(msg) {
+  const el = document.getElementById('auth-err');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function fmtErr(code) {
+  return ({
+    'auth/invalid-email':        'Invalid email address.',
+    'auth/user-not-found':       'No account with this email.',
+    'auth/wrong-password':       'Incorrect password.',
+    'auth/invalid-credential':   'Incorrect email or password.',
+    'auth/email-already-in-use': 'This email is already registered.',
+    'auth/weak-password':        'Password must be at least 6 characters.',
+    'auth/too-many-requests':    'Too many attempts. Please try again later.',
+  })[code] || 'Something went wrong. Please try again.';
+}
+
+// ─── TOAST ────────────────────────────────────────
+function toast(msg, err=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast' + (err ? ' error' : '');
+  el.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.add('hidden'), 3200);
+}
+window.toast = toast;
+</script>
+</body>
+</html>
