@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gloria's Bedding — Inventory</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --green:#1B4332;--gl:#2D6A4F;--gp:#E8F0EC;
+      --gold:#C9A84C;--goldf:#FFF8E7;
+      --cream:#FAF7F2;--cdk:#F0EBE0;
+      --text:#1C1C1C;--mut:#6B6B6B;--wh:#FFFFFF;
+      --red:#C0392B;--rl:#FDECEA;--bdr:#E0D8CC;
+      --sh:0 2px 12px rgba(27,67,50,.09);--shl:0 8px 32px rgba(27,67,50,.15);
+    }
+    body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+    #ls{position:fixed;inset:0;background:var(--green);display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:16px;z-index:9999}
+    #ls h2{font-family:'Playfair Display',serif;font-size:22px;color:#fff}
+    #ls p{font-size:13px;color:rgba(255,255,255,.65);text-align:center;max-width:280px}
+    .spinner{width:38px;height:38px;border:3px solid rgba(255,255,255,.2);
+      border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #lt{display:none;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:0 24px}
+    #lt h2{font-family:'Playfair Display',serif;font-size:22px;color:#fff}
+    #lt p{font-size:13px;color:rgba(255,255,255,.8);max-width:320px;line-height:1.7}
+    #lt code{background:rgba(255,255,255,.15);padding:2px 8px;border-radius:5px;font-size:12px}
+    .btn-retry{background:var(--gold);color:var(--green);border:none;padding:11px 28px;
+      border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer}
+    .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(140deg,var(--green) 0%,var(--gl) 100%);padding:24px}
+    .auth-card{background:var(--wh);border-radius:20px;padding:44px 38px;width:100%;
+      max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.24)}
+    .auth-logo{text-align:center;margin-bottom:30px}
+    .auth-logo .leaf{font-size:38px;display:block;margin-bottom:7px}
+    .auth-logo h1{font-family:'Playfair Display',serif;font-size:26px;color:var(--green);font-weight:700}
+    .auth-logo p{color:var(--mut);font-size:11px;margin-top:4px;text-transform:uppercase;letter-spacing:.09em}
+    .auth-tabs{display:flex;background:var(--cdk);border-radius:10px;padding:4px;margin-bottom:22px}
+    .auth-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:8px;
+      font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;color:var(--mut);transition:all .2s}
+    .auth-tab.active{background:var(--wh);color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+    .worker-note{background:var(--gp);border-radius:10px;padding:11px 14px;font-size:12px;
+      color:var(--gl);margin-bottom:16px;line-height:1.5}
+    .worker-note strong{color:var(--green)}
+    .form-group{margin-bottom:13px}
+    .form-group label{display:block;font-size:11px;font-weight:600;color:var(--mut);margin-bottom:5px;
+      text-transform:uppercase;letter-spacing:.05em}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 13px;
+      border:1.5px solid var(--bdr);border-radius:10px;font-family:'DM Sans',sans-serif;
+      font-size:14px;color:var(--text);background:var(--cream);outline:none;transition:border-color .2s}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green);background:var(--wh)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;
+      border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+    .btn-primary{background:var(--green);color:var(--wh);width:100%}
+    .btn-primary:hover{background:var(--gl)}
+    .btn-gold{background:var(--gold);color:var(--wh)}
+    .btn-gold:hover{background:#b8963d}
+    .btn-apple{background:#000;color:#fff;width:100%;margin-top:8px}
+    .btn-apple:hover{background:#222}
+    .btn-sm{padding:6px 11px;font-size:12px;border-radius:7px;width:auto}
+    .btn-outline{background:transparent;border:1.5px solid var(--bdr);color:var(--text)}
+    .btn-outline:hover{border-color:var(--green);color:var(--green)}
+    .btn-danger{background:var(--red);color:var(--wh)}
+    .btn-danger:hover{background:#a93226}
+    .btn-ghost{background:var(--cdk);color:var(--text);border:1.5px solid var(--bdr)}
+    .btn-ghost:hover{background:var(--bdr)}
+    .divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--mut);font-size:12px}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdr)}
+    #auth-err{margin-top:11px;color:var(--red);font-size:13px;text-align:center}
+    .header{background:var(--green);padding:0 24px;display:flex;align-items:center;height:62px;
+      gap:18px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.18)}
+    .hlogo{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;white-space:nowrap;flex-shrink:0}
+    .hlogo span{color:var(--gold)}
+    .hnav{display:flex;gap:2px;flex:1;overflow-x:auto}
+    .hnav::-webkit-scrollbar{display:none}
+    .ntab{padding:8px 13px;border-radius:8px;border:none;background:transparent;
+      color:rgba(255,255,255,.65);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+      cursor:pointer;white-space:nowrap;transition:all .2s}
+    .ntab:hover{background:rgba(255,255,255,.1);color:#fff}
+    .ntab.active{background:rgba(255,255,255,.16);color:#fff}
+    .huser{display:flex;align-items:center;gap:8px;flex-shrink:0}
+    .upill{background:rgba(255,255,255,.1);border-radius:20px;padding:5px 12px;font-size:12px;
+      display:flex;align-items:center;gap:7px;color:#fff}
+    .rtag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em}
+    .rtag.admin{background:var(--gold);color:var(--green)}
+    .rtag.worker{background:rgba(255,255,255,.2);color:#fff}
+    .btn-out{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;
+      padding:6px 13px;border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s}
+    .btn-out:hover{background:rgba(255,255,255,.2)}
+    .app-layout{min-height:100vh;display:flex;flex-direction:column}
+    .content{flex:1;padding:26px 24px;max-width:1200px;margin:0 auto;width:100%}
+    .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+    .ptitle{font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--green)}
+    .psub{font-size:12px;color:var(--mut);margin-top:2px}
+    .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:13px;margin-bottom:22px}
+    .sc{background:var(--wh);border-radius:14px;padding:17px 20px;box-shadow:var(--sh);display:flex;align-items:center;gap:13px;transition:transform .2s}
+    .sc:hover{transform:translateY(-2px)}
+    .sico{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+    .sico.g{background:var(--gp)}.sico.o{background:var(--goldf)}.sico.r{background:var(--rl)}
+    .sv{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--text);line-height:1}
+    .sl{font-size:11px;color:var(--mut);margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+    .abar{border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px}
+    .abar.red{background:var(--rl);border:1px solid #f5c6cb}
+    .abar.yellow{background:var(--goldf);border:1px solid #f0d080}
+    .abar .ico{font-size:17px;flex-shrink:0;margin-top:1px}
+    .abar strong{font-size:13px}.abar p{font-size:12px;margin-top:2px}
+    .tb{display:flex;gap:9px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+    .sb{flex:1;min-width:180px;position:relative}
+    .sb input{width:100%;padding:10px 13px 10px 37px;border:1.5px solid var(--bdr);border-radius:10px;
+      font-family:'DM Sans',sans-serif;font-size:14px;background:var(--wh);outline:none;transition:border-color .2s}
+    .sb input:focus{border-color:var(--green)}
+    .sb .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:14px;pointer-events:none}
+    .fs{padding:10px 13px;border:1.5px solid var(--bdr);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--wh);outline:none;cursor:pointer}
+    .fs:focus{border-color:var(--green)}
+    .tc{background:var(--wh);border-radius:16px;box-shadow:var(--sh);overflow:hidden}
+    .tw{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    thead tr{background:var(--green);color:#fff}
+    thead th{padding:13px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+    tbody tr{border-bottom:1px solid var(--bdr);transition:background .15s}
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover{background:var(--cream)}
+    tbody tr.lrow{background:#FFF9F9}
+    tbody tr.lrow:hover{background:#FFF0F0}
+    td{padding:13px 14px;font-size:14px;vertical-align:middle}
+    .cb{background:var(--gp);color:var(--green);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em}
+    .qn{font-weight:700;font-size:15px}
+    .qn.lo{color:var(--red)}.qn.ok{color:var(--green)}
+    .lb{background:var(--rl);color:var(--red);font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;margin-left:5px}
+    .ar{display:flex;gap:5px;flex-wrap:wrap}
+    .btn-sell{background:var(--gold);color:var(--wh)}.btn-sell:hover{background:#b8963d}
+    .btn-rst{background:var(--gp);color:var(--green)}.btn-rst:hover{background:var(--green);color:var(--wh)}
+    .btn-edit{background:#EEF2FF;color:#3730a3}.btn-edit:hover{background:#3730a3;color:var(--wh)}
+    .btn-del{background:var(--rl);color:var(--red)}.btn-del:hover{background:var(--red);color:var(--wh)}
+    .empty{text-align:center;padding:52px 24px;color:var(--mut)}
+    .empty .emo{font-size:44px;margin-bottom:9px}
+    .empty h3{font-family:'Playfair Display',serif;color:var(--text);margin-bottom:6px}
+    .mo{position:fixed;inset:0;background:rgba(0,0,0,.44);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;backdrop-filter:blur(3px)}
+    .modal{background:var(--wh);border-radius:20px;padding:32px;width:100%;max-width:450px;box-shadow:0 20px 60px rgba(0,0,0,.22);max-height:90vh;overflow-y:auto}
+    .mt{font-family:'Playfair Display',serif;font-size:20px;color:var(--green);margin-bottom:20px;font-weight:700}
+    .ma{display:flex;gap:9px;margin-top:20px}.ma .btn{flex:1}
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .sr{background:var(--wh);border-radius:12px;padding:14px 17px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--sh);margin-bottom:9px;gap:12px}
+    .si2 h4{font-weight:600;font-size:14px;margin-bottom:2px}.si2 p{font-size:12px;color:var(--mut)}
+    .sa{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--green);text-align:right;flex-shrink:0}
+    .sa span{display:block;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--mut);font-weight:400}
+    .tr2{background:var(--wh);border-radius:12px;padding:14px 17px;display:flex;align-items:center;box-shadow:var(--sh);margin-bottom:9px;gap:12px}
+    .tav{width:40px;height:40px;background:var(--gp);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+    .ti{flex:1}.ti h4{font-weight:600;font-size:14px}.ti p{font-size:12px;color:var(--mut)}
+    .toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;padding:12px 17px;border-radius:12px;box-shadow:var(--shl);font-size:13px;font-weight:500;z-index:9999;display:flex;align-items:center;gap:7px;animation:up .3s ease;max-width:290px}
+    .toast.err{background:var(--red)}
+    @keyframes up{from{transform:translateY(18px);opacity:0}to{transform:translateY(0);opacity:1}}
+    @media print{.header,.tb,.ar,.ph>div:last-child{display:none!important}.content{padding:0}.tc{box-shadow:none;border:1px solid #ccc}body{background:#fff}}
+    .hidden{display:none!important}
+    @media(max-width:640px){.header{padding:0 13px}.content{padding:16px 13px}.auth-card{padding:28px 18px}.modal{padding:24px 16px}.sv{font-size:20px}.upill{display:none}}
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="ls">
+  <div id="ln" style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
+    <div class="spinner"></div>
+    <h2>Gloria's Bedding</h2>
+    <p>Connecting to store…</p>
+  </div>
+  <div id="lt">
+    <div style="font-size:46px">⚠️</div>
+    <h2>Cannot Connect</h2>
+    <p>Firebase could not be reached. Make sure:<br><br>
+      ✅ Your domain is in Firebase <code>Authorized domains</code><br>
+      ✅ Email/Password sign-in is <code>enabled</code><br>
+      ✅ Firestore Database has been <code>created</code>
+    </p>
+    <button class="btn-retry" onclick="location.reload()">↺ Try Again</button>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div id="as" class="auth-screen hidden">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="leaf">🌿</span>
+      <h1>Gloria's Bedding</h1>
+      <p>Inventory Management</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-si" onclick="authTab('si')">Sign In</button>
+      <button class="auth-tab" id="tab-reg" onclick="authTab('reg')">Create Account</button>
+    </div>
+    <div id="form-si">
+      <div class="form-group"><label>Email</label><input type="email" id="si-em" placeholder="you@email.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="si-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSignIn()"></div>
+      <button class="btn btn-primary" onclick="doSignIn()">Sign In</button>
+    </div>
+    <div id="form-reg" class="hidden">
+      <div class="worker-note">👋 <strong>New team member?</strong> Fill in your details — you'll automatically get <em>Worker</em> access. Gloria doesn't need to set anything up for you.</div>
+      <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Your Name"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-em" placeholder="you@email.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-pw" placeholder="Min. 6 characters"></div>
+      <button class="btn btn-primary" onclick="doRegister()">Create My Account</button>
+    </div>
+    <div class="divider">or</div>
+    <button class="btn btn-apple" onclick="doApple()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+      Sign in with Apple
+    </button>
+    <div id="auth-err" class="hidden"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="app-layout hidden">
+  <header class="header">
+    <div class="hlogo">Gloria's <span>Bedding</span></div>
+    <nav class="hnav" id="hnav"></nav>
+    <div class="huser">
+      <div class="upill"><span id="uname">—</span><span class="rtag admin" id="urole">Owner</span></div>
+      <button class="btn-out" onclick="doSignOut()">Sign Out</button>
+    </div>
+  </header>
+  <div class="content" id="ct"></div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div id="pm" class="mo hidden"><div class="modal">
+  <h2 class="mt" id="pm-title">Add Product</h2>
+  <input type="hidden" id="pm-id">
+  <div class="form-group"><label>Product Name *</label><input type="text" id="pm-name" placeholder="e.g. King Foam Mattress"></div>
+  <div class="form-group"><label>Category *</label>
+    <select id="pm-cat"><option>Mattress</option><option>Carpet</option><option>Pillow</option><option>Bedsheet</option><option>Duvet</option><option>Blanket</option><option>Cushion</option><option>Other</option></select>
+  </div>
+  <div class="g2">
+    <div class="form-group"><label>Quantity *</label><input type="number" id="pm-qty" placeholder="0" min="0"></div>
+    <div class="form-group"><label>Price (GH₵/unit)</label><input type="number" id="pm-price" placeholder="0" min="0" step="0.01"></div>
+  </div>
+  <div class="form-group"><label>Low Stock Alert Threshold</label><input type="number" id="pm-thr" placeholder="3" min="0"></div>
+  <div class="form-group"><label>Notes</label><textarea id="pm-notes" rows="2" placeholder="Optional notes…"></textarea></div>
+  <div class="ma"><button class="btn btn-outline" onclick="closePM()">Cancel</button><button class="btn btn-primary" onclick="saveProduct()">Save Product</button></div>
+</div></div>
+
+<!-- SELL MODAL -->
+<div id="sm" class="mo hidden"><div class="modal">
+  <h2 class="mt">Record Sale 💰</h2>
+  <input type="hidden" id="sm-id">
+  <p id="sm-lbl" style="color:var(--mut);font-size:14px;margin-bottom:17px;font-weight:500"></p>
+  <div class="form-group"><label>Quantity Sold *</label><input type="number" id="sm-qty" placeholder="1" min="1"></div>
+  <div class="form-group"><label>Sale Price per Unit (GH₵)</label><input type="number" id="sm-price" placeholder="0" min="0" step="0.01"></div>
+  <div class="ma"><button class="btn btn-outline" onclick="closeSM()">Cancel</button><button class="btn btn-gold" onclick="confirmSell()">✓ Confirm Sale</button></div>
+</div></div>
+
+<!-- RESTOCK MODAL -->
+<div id="rm" class="mo hidden"><div class="modal">
+  <h2 class="mt">Restock Product 📦</h2>
+  <input type="hidden" id="rm-id">
+  <p id="rm-lbl" style="color:var(--mut);font-size:14px;margin-bottom:17px;font-weight:500"></p>
+  <div class="form-group"><label>Units to Add *</label><input type="number" id="rm-qty" placeholder="e.g. 10" min="1"></div>
+  <div class="ma"><button class="btn btn-outline" onclick="closeRM()">Cancel</button><button class="btn btn-primary" onclick="confirmRestock()">+ Add Stock</button></div>
+</div></div>
+
+<!-- DELETE MODAL -->
+<div id="dm" class="mo hidden"><div class="modal" style="max-width:330px;text-align:center">
+  <div style="font-size:42px;margin-bottom:9px">🗑️</div>
+  <h2 class="mt" style="text-align:center">Delete Product?</h2>
+  <p style="color:var(--mut);font-size:13px;margin-bottom:18px">This cannot be undone.</p>
+  <input type="hidden" id="dm-id">
+  <div class="ma"><button class="btn btn-outline" onclick="closeDM()">Cancel</button><button class="btn btn-danger" onclick="confirmDelete()">Delete</button></div>
+</div></div>
+
+<div id="toast" class="toast hidden"></div>
+
+<!-- ✅ TIMEOUT in a plain script — always runs, no matter what -->
+<script>
+  var _loadTimer = setTimeout(function() {
+    var ln = document.getElementById('ln');
+    var lt = document.getElementById('lt');
+    if (ln) ln.style.display = 'none';
+    if (lt) lt.style.display = 'flex';
+  }, 8000);
+</script>
+
+<script type="module">
+import { initializeApp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+         signInWithPopup, OAuthProvider, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+         onSnapshot, setDoc, getDoc, getDocs, query, orderBy, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyAhzAe_w6XH_qS8e8fTrqzTYW7EXycuMTk",
+  authDomain:        "gloria-s-bedding.firebaseapp.com",
+  projectId:         "gloria-s-bedding",
+  storageBucket:     "gloria-s-bedding.firebasestorage.app",
+  messagingSenderId: "1060587306850",
+  appId:             "1:1060587306850:web:5545317d629790960e363b"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+let me = null, myRole = 'worker';
+let products = [], salesLog = [], team = [];
+let tab = 'dashboard', srch = '', fcat = 'All';
+let uP, uS, uT, tTimer;
+
+onAuthStateChanged(auth, async user => {
+  clearTimeout(window._loadTimer);
+  if (user) {
+    const ref  = doc(db, 'users', user.uid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      const all  = await getDocs(collection(db, 'users'));
+      const role = all.empty ? 'admin' : 'worker';
+      const name = user.displayName || user.email.split('@')[0];
+      await setDoc(ref, { name, email: user.email, role, createdAt: serverTimestamp() });
+      myRole = role;
+      me = { uid: user.uid, email: user.email, name, role };
+    } else {
+      const d = snap.data();
+      myRole = d.role || 'worker';
+      me = { uid: user.uid, email: user.email, name: d.name || user.email.split('@')[0], role: myRole };
+    }
+    showApp();
+  } else {
+    showAuth();
+  }
+});
+
+function showAuth() { hide('ls'); show('as'); hide('app'); }
+function showApp() {
+  hide('ls'); hide('as'); show('app');
+  g('uname').textContent = me.name;
+  const rt = g('urole');
+  rt.textContent = myRole==='admin' ? 'Owner' : 'Worker';
+  rt.className   = 'rtag '+(myRole==='admin'?'admin':'worker');
+  buildNav(); startListeners(); render();
+}
+function buildNav() {
+  const tabs = [
+    {id:'dashboard',l:'📊 Dashboard'},{id:'inventory',l:'📦 Inventory'},
+    ...(myRole==='admin'?[{id:'sales',l:'🧾 Sales Log'},{id:'team',l:'👥 Team'}]:[])
+  ];
+  g('hnav').innerHTML = tabs.map(t =>
+    `<button class="ntab${t.id===tab?' active':''}" onclick="switchTab('${t.id}')">${t.l}</button>`
+  ).join('');
+}
+function startListeners() {
+  if(uP) uP();
+  uP = onSnapshot(query(collection(db,'products'),orderBy('createdAt','desc')), s => {
+    products = s.docs.map(d=>({id:d.id,...d.data()}));
+    if(['inventory','dashboard'].includes(tab)) render();
+  });
+  if(myRole==='admin') {
+    if(uS) uS();
+    uS = onSnapshot(query(collection(db,'sales'),orderBy('soldAt','desc')), s => {
+      salesLog = s.docs.map(d=>({id:d.id,...d.data()}));
+      if(['sales','dashboard'].includes(tab)) render();
+    });
+    if(uT) uT();
+    uT = onSnapshot(collection(db,'users'), s => {
+      team = s.docs.map(d=>({id:d.id,...d.data()}));
+      if(tab==='team') render();
+    });
+  }
+}
+window.switchTab = t => { tab=t; buildNav(); render(); };
+function render() {
+  const el=g('ct');
+  if(tab==='dashboard') el.innerHTML=renderDash();
+  else if(tab==='inventory') el.innerHTML=renderInv();
+  else if(tab==='sales') el.innerHTML=renderSales();
+  else if(tab==='team') el.innerHTML=renderTeam();
+}
+
+function renderDash() {
+  const total=products.length, units=products.reduce((s,p)=>s+(p.quantity||0),0);
+  const val=products.reduce((s,p)=>s+(p.quantity||0)*(p.price||0),0);
+  const lowArr=products.filter(p=>(p.quantity||0)<=(p.lowStockThreshold||3));
+  const today=new Date().toDateString();
+  const tS=salesLog.filter(s=>s.soldAt?.toDate?.().toDateString()===today);
+  const tRev=tS.reduce((s,x)=>s+(x.total||0),0);
+  const icons={Mattress:'🛏️',Carpet:'🪄',Pillow:'😴',Bedsheet:'📄',Duvet:'🛌',Blanket:'🧣',Cushion:'🛋️',Other:'📦'};
+  const cats={};
+  products.forEach(p=>{ const c=p.category||'Other'; cats[c]=cats[c]||{qty:0,n:0}; cats[c].qty+=p.quantity||0; cats[c].n++; });
+  const lowA=lowArr.length?`<div class="abar red"><div class="ico">🔔</div><div><strong style="color:var(--red)">${lowArr.length} item(s) running low</strong><p style="color:#7B241C">${lowArr.map(p=>`${p.name} (${p.quantity} left)`).join(' · ')}</p></div></div>`:'';
+  return `<div class="ph"><div><div class="ptitle">Good day, ${me.name.split(' ')[0]}! 👋</div><div class="psub">Here's your store overview.</div></div></div>
+  ${lowA}
+  <div class="sgrid">
+    <div class="sc"><div class="sico g">📦</div><div><div class="sv">${total}</div><div class="sl">Products</div></div></div>
+    <div class="sc"><div class="sico g">🏷️</div><div><div class="sv">${units}</div><div class="sl">Units in Stock</div></div></div>
+    ${myRole==='admin'?`<div class="sc"><div class="sico o">💰</div><div><div class="sv">GH₵${val.toLocaleString()}</div><div class="sl">Stock Value</div></div></div>
+    <div class="sc"><div class="sico o">📈</div><div><div class="sv">GH₵${tRev.toLocaleString()}</div><div class="sl">Revenue Today</div></div></div>`:''}
+    <div class="sc"><div class="sico r">⚠️</div><div><div class="sv">${lowArr.length}</div><div class="sl">Low Stock</div></div></div>
+  </div>
+  <div class="ptitle" style="font-size:17px;margin-bottom:13px">By Category</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:11px">
+    ${Object.keys(cats).length===0?'<p style="color:var(--mut);font-size:13px">No products yet.</p>':
+      Object.entries(cats).map(([c,d])=>`<div class="sc" style="flex-direction:column;align-items:flex-start;gap:7px"><div style="font-size:22px">${icons[c]||'📦'}</div><div><div style="font-weight:700;font-size:15px">${d.qty} units</div><div style="font-size:11px;color:var(--mut)">${c} · ${d.n} item${d.n!==1?'s':''}</div></div></div>`).join('')}
+  </div>`;
+}
+
+function renderInv() {
+  const allCats=['All',...new Set(products.map(p=>p.category).filter(Boolean))];
+  const list=products.filter(p=>(!srch||p.name.toLowerCase().includes(srch.toLowerCase()))&&(fcat==='All'||p.category===fcat));
+  const lowArr=products.filter(p=>(p.quantity||0)<=(p.lowStockThreshold||3));
+  const lowA=lowArr.length?`<div class="abar red"><div class="ico">🔔</div><div><strong style="color:var(--red)">${lowArr.length} item(s) need restocking</strong><p style="color:#7B241C">${lowArr.map(p=>p.name).join(' · ')}</p></div></div>`:'';
+  return `<div class="ph">
+    <div><div class="ptitle">Inventory</div><div class="psub">${products.length} products · ${products.reduce((s,p)=>s+(p.quantity||0),0)} total units</div></div>
+    ${myRole==='admin'?`<div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨️ Print</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn btn-primary btn-sm" onclick="openAdd()">+ Add Product</button>
+    </div>`:`<div style="background:var(--gp);color:var(--gl);padding:7px 13px;border-radius:8px;font-size:12px;font-weight:600">👁️ View Only</div>`}
+  </div>
+  ${lowA}
+  <div class="tb">
+    <div class="sb"><span class="si">🔍</span><input type="text" placeholder="Search products…" value="${srch}" oninput="_srch(this.value)"></div>
+    <select class="fs" onchange="_fcat(this.value)">${allCats.map(c=>`<option${c===fcat?' selected':''}>${c}</option>`).join('')}</select>
+  </div>
+  <div class="tc"><div class="tw"><table>
+    <thead><tr><th>Product</th><th>Category</th><th>In Stock</th>${myRole==='admin'?'<th>Price</th><th>Value</th><th>Actions</th>':''}</tr></thead>
+    <tbody>${list.length===0?`<tr><td colspan="6"><div class="empty"><div class="emo">📦</div><h3>No products found</h3><p>${myRole==='admin'?'Click "+ Add Product" to get started.':'No items match your search.'}</p></div></td></tr>`:
+      list.map(p=>{const low=(p.quantity||0)<=(p.lowStockThreshold||3);return`<tr class="${low?'lrow':''}">
+        <td><strong>${p.name}</strong>${p.notes?`<div style="font-size:11px;color:var(--mut);margin-top:2px">${p.notes}</div>`:''}${low?`<span class="lb">Low Stock</span>`:''}</td>
+        <td><span class="cb">${p.category||'Other'}</span></td>
+        <td><span class="qn ${low?'lo':'ok'}">${p.quantity||0}</span></td>
+        ${myRole==='admin'?`<td>GH₵${(p.price||0).toLocaleString()}</td><td>GH₵${((p.price||0)*(p.quantity||0)).toLocaleString()}</td>
+        <td><div class="ar">
+          <button class="btn btn-sm btn-sell" onclick="openSell('${p.id}')">💰 Sell</button>
+          <button class="btn btn-sm btn-rst" onclick="openRst('${p.id}')">+ Restock</button>
+          <button class="btn btn-sm btn-edit" onclick="openEdit('${p.id}')">✏️</button>
+          <button class="btn btn-sm btn-del" onclick="openDel('${p.id}')">🗑️</button>
+        </div></td>`:''}
+      </tr>`;}).join('')}
+    </tbody>
+  </table></div></div>`;
+}
+window._srch=v=>{srch=v;render();};
+window._fcat=v=>{fcat=v;render();};
+
+function renderSales() {
+  const today=new Date().toDateString();
+  const tS=salesLog.filter(s=>s.soldAt?.toDate?.().toDateString()===today);
+  const tRev=tS.reduce((s,x)=>s+(x.total||0),0);
+  const allRev=salesLog.reduce((s,x)=>s+(x.total||0),0);
+  return `<div class="ph"><div><div class="ptitle">Sales Log</div><div class="psub">${salesLog.length} transactions · GH₵${allRev.toLocaleString()} total</div></div></div>
+  <div class="sgrid" style="margin-bottom:20px">
+    <div class="sc"><div class="sico o">📈</div><div><div class="sv">GH₵${tRev.toLocaleString()}</div><div class="sl">Revenue Today</div></div></div>
+    <div class="sc"><div class="sico g">🧾</div><div><div class="sv">${tS.length}</div><div class="sl">Sales Today</div></div></div>
+    <div class="sc"><div class="sico o">💎</div><div><div class="sv">GH₵${allRev.toLocaleString()}</div><div class="sl">All-Time Revenue</div></div></div>
+  </div>
+  ${salesLog.length===0?`<div class="empty"><div class="emo">🧾</div><h3>No sales yet</h3><p>Record sales from the Inventory tab.</p></div>`:
+    salesLog.map(s=>{const d=s.soldAt?.toDate?.()|| new Date();return`<div class="sr">
+      <div style="font-size:21px;flex-shrink:0">🛒</div>
+      <div class="si2" style="flex:1"><h4>${s.productName||'Unknown'}</h4><p>${s.qty||0} units · ${s.soldByName||'Unknown'} · ${d.toLocaleDateString()} ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</p></div>
+      <div class="sa">GH₵${(s.total||0).toLocaleString()}<span>@GH₵${(s.pricePerUnit||0).toLocaleString()}/unit</span></div>
+    </div>`;}).join('')}`;
+}
+
+function renderTeam() {
+  return `<div class="ph"><div><div class="ptitle">Team</div><div class="psub">${team.length} members</div></div></div>
+  <div class="abar yellow" style="margin-bottom:18px"><div class="ico">💡</div><div>
+    <strong style="color:#7A5C00">How workers join the app</strong>
+    <p style="color:#7A5C00">They open this page, click <em>Create Account</em>, enter their name, email and password — automatically added as <strong>Worker</strong>. No Firebase setup needed.</p>
+  </div></div>
+  ${team.map(m=>`<div class="tr2">
+    <div class="tav">👤</div>
+    <div class="ti"><h4>${m.name||'Unknown'} ${m.id===me.uid?'<span style="font-size:11px;color:var(--mut)">(you)</span>':''}</h4><p>${m.email}</p></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="rtag ${m.role==='admin'?'admin':'worker'}">${m.role==='admin'?'Owner':'Worker'}</span>
+      ${m.id!==me.uid?`<button class="btn btn-sm btn-outline" onclick="toggleRole('${m.id}','${m.role}')">${m.role==='admin'?'Make Worker':'Make Owner'}</button>`:''}
+    </div>
+  </div>`).join('')}`;
+}
+
+window.openAdd=()=>{ g('pm-title').textContent='Add Product'; g('pm-id').value=''; ['pm-name','pm-qty','pm-price','pm-notes'].forEach(i=>g(i).value=''); g('pm-cat').value='Mattress'; g('pm-thr').value='3'; show('pm'); };
+window.openEdit=id=>{ const p=products.find(x=>x.id===id); if(!p) return; g('pm-title').textContent='Edit Product'; g('pm-id').value=id; g('pm-name').value=p.name||''; g('pm-cat').value=p.category||'Mattress'; g('pm-qty').value=p.quantity||0; g('pm-price').value=p.price||''; g('pm-thr').value=p.lowStockThreshold||3; g('pm-notes').value=p.notes||''; show('pm'); };
+window.closePM=()=>hide('pm');
+window.saveProduct=async()=>{ const name=g('pm-name').value.trim(); if(!name) return toast('Enter a product name',1); const qty=parseInt(g('pm-qty').value)||0; if(qty<0) return toast('Quantity cannot be negative',1); const data={name,category:g('pm-cat').value,quantity:qty,price:parseFloat(g('pm-price').value)||0,lowStockThreshold:parseInt(g('pm-thr').value)||3,notes:g('pm-notes').value.trim(),updatedAt:serverTimestamp()}; const eid=g('pm-id').value; try{ if(eid){await updateDoc(doc(db,'products',eid),data);toast('✅ Product updated!');}else{data.createdAt=serverTimestamp();await addDoc(collection(db,'products'),data);toast('✅ Product added!');} closePM();}catch(e){toast(e.message,1);}};
+window.openSell=id=>{ const p=products.find(x=>x.id===id); if(!p) return; g('sm-id').value=id; g('sm-lbl').textContent=`${p.name}  ·  ${p.quantity} in stock`; g('sm-qty').value=1; g('sm-price').value=p.price||''; show('sm'); };
+window.closeSM=()=>hide('sm');
+window.confirmSell=async()=>{ const id=g('sm-id').value,qty=parseInt(g('sm-qty').value)||0,price=parseFloat(g('sm-price').value)||0; if(qty<=0) return toast('Enter a valid quantity',1); const p=products.find(x=>x.id===id); if(!p) return; if(qty>p.quantity) return toast(`Only ${p.quantity} in stock!`,1); try{await updateDoc(doc(db,'products',id),{quantity:p.quantity-qty,updatedAt:serverTimestamp()});await addDoc(collection(db,'sales'),{productId:id,productName:p.name,qty,pricePerUnit:price,total:qty*price,soldBy:me.uid,soldByName:me.name,soldAt:serverTimestamp()});toast(`✅ Sold ${qty} × ${p.name}`);closeSM();}catch(e){toast(e.message,1);}};
+window.openRst=id=>{ const p=products.find(x=>x.id===id); if(!p) return; g('rm-id').value=id; g('rm-lbl').textContent=`${p.name}  ·  ${p.quantity} currently in stock`; g('rm-qty').value=''; show('rm'); };
+window.closeRM=()=>hide('rm');
+window.confirmRestock=async()=>{ const id=g('rm-id').value,add=parseInt(g('rm-qty').value)||0; if(add<=0) return toast('Enter units to add',1); const p=products.find(x=>x.id===id); if(!p) return; try{await updateDoc(doc(db,'products',id),{quantity:(p.quantity||0)+add,updatedAt:serverTimestamp()});toast(`📦 Added ${add} units to ${p.name}`);closeRM();}catch(e){toast(e.message,1);}};
+window.openDel=id=>{ g('dm-id').value=id; show('dm'); };
+window.closeDM=()=>hide('dm');
+window.confirmDelete=async()=>{ try{await deleteDoc(doc(db,'products',g('dm-id').value));toast('🗑️ Deleted');closeDM();}catch(e){toast(e.message,1);}};
+window.toggleRole=async(uid,cur)=>{ const nr=cur==='admin'?'worker':'admin'; try{await updateDoc(doc(db,'users',uid),{role:nr});toast(`✅ Role → ${nr}`);}catch(e){toast(e.message,1);}};
+window.exportCSV=()=>{ const rows=[['Name','Category','Qty','Price (GH₵)','Value (GH₵)','Notes']]; products.forEach(p=>rows.push([p.name,p.category,p.quantity,p.price,((p.quantity||0)*(p.price||0)).toFixed(2),p.notes||''])); const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=`glorias-bedding-${new Date().toISOString().slice(0,10)}.csv`; a.click(); toast('📥 CSV downloaded!');};
+
+window.authTab=t=>{ g('tab-si').classList.toggle('active',t==='si'); g('tab-reg').classList.toggle('active',t==='reg'); g('form-si').classList.toggle('hidden',t!=='si'); g('form-reg').classList.toggle('hidden',t!=='reg'); hide('auth-err'); };
+window.doSignIn=async()=>{ try{await signInWithEmailAndPassword(auth,g('si-em').value,g('si-pw').value);}catch(e){aerr(ferr(e.code));}};
+window.doRegister=async()=>{ const name=g('reg-name').value.trim(); if(!name) return aerr('Please enter your name.'); try{const cred=await createUserWithEmailAndPassword(auth,g('reg-em').value,g('reg-pw').value); const all=await getDocs(collection(db,'users')); const role=all.empty?'admin':'worker'; await setDoc(doc(db,'users',cred.user.uid),{name,email:cred.user.email,role,createdAt:serverTimestamp()});}catch(e){aerr(ferr(e.code));}};
+window.doApple=async()=>{ try{const p=new OAuthProvider('apple.com');p.addScope('email');p.addScope('name');await signInWithPopup(auth,p);}catch(e){aerr('Apple sign-in failed. Enable it in Firebase Console.');}};
+window.doSignOut=async()=>{ [uP,uS,uT].forEach(u=>u&&u()); await signOut(auth); };
+function aerr(m){const el=g('auth-err');el.textContent=m;el.classList.remove('hidden');}
+function ferr(c){return({'auth/invalid-email':'Invalid email address.','auth/user-not-found':'No account found with this email.','auth/wrong-password':'Incorrect password.','auth/invalid-credential':'Incorrect email or password.','auth/email-already-in-use':'This email is already registered.','auth/weak-password':'Password must be at least 6 characters.','auth/too-many-requests':'Too many attempts — try again later.'})[c]||'Something went wrong. Please try again.';}
+function toast(msg,err=0){const el=g('toast');el.textContent=msg;el.className='toast'+(err?' err':'');el.classList.remove('hidden');clearTimeout(tTimer);tTimer=setTimeout(()=>el.classList.add('hidden'),3200);}
+function g(id){return document.getElementById(id);}
+function show(id){g(id).classList.remove('hidden');}
+function hide(id){g(id).classList.add('hidden');}
+</script>
+</body>
+</html>
